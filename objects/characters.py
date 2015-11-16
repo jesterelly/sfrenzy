@@ -34,6 +34,10 @@ class Fish:
         self.ob = ob
         self.controls = controls
 
+        for c in self.ob.children:
+            if c.name.endswith("mouth"):
+                self.mouth = c
+
         self.move_speed = 0.1
         self.rotate_leftright = 0.1
         self.rotate_updown = 0.05
@@ -108,6 +112,9 @@ class Fish:
         # Move the fish
         move = move * self.move_speed
         ob.applyMovement(move, False)
+
+        # Check for food near mouth
+        bge.logic.foodspawner.check(self.mouth)
 
 
 class Seahorse(Fish):

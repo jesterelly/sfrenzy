@@ -12,6 +12,9 @@ class Food:
             if c.name.endswith('armature'):
                 c.playAction('FoodScale_Fast', 0, 5)
 
+        self.mouth = None
+        self.scale = 1.0
+
     def collide(self, other):
         if 'floor' in other:
             self.owner.endObject()
@@ -19,6 +22,19 @@ class Food:
 
     def update(self):
         own = self.owner
+        if self.mouth is not None:
+
+            pos = self.mouth.worldPosition.copy()
+            pos[1] += 1.0
+            own.worldPosition = own.worldPosition.lerp(pos, 0.1)
+            self.scale -= 0.05
+            own.scaling = [self.scale, self.scale, self.scale]
+            if self.scale < 0.1:
+                own.endObject()
+                bge.logic.foodspawner.food.remove(self)
+
+            return
+
         if own.worldPosition[2] < 0.0:
             own.endObject()
             bge.logic.foodspawner.food.remove(self)
@@ -36,6 +52,15 @@ class FoodSpawner:
         self.food = []
         self.next_spawn_time = time.monotonic()
         self.spawn_delay = 0.5  # Seconds
+
+    def check(self, mouth):
+        for f in list(self.food):
+            if f.mouth is None:
+                d = mouth.getDistanceTo(f.owner)
+                if d < 1.0:
+                    print ("eat")
+                    f.mouth = mouth
+                    f.owner.suspendDynamics()
 
     def update(self):
         now = time.monotonic()
